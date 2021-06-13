@@ -1,0 +1,201 @@
+#!bin/bash
+
+#USEFUL LINUX COMMANDS
+
+
+#TO MAKE FILE EXECUTABLE
+chmod +x filename
+chmod 755 filename
+#The shorthand 755 is often used for scripts as it allows you the owner to write or modify the script and for everyone to execute the script.
+#RUN FILE
+./filename
+bash filename 
+
+#TO MONITOR TEMPS FOR CPU AND FREQUENCY FOR CPU & GPU
+watch -n 1 "vcgencmd measure_temp; vcgencmd measure_clock arm; vcgencmd measure_clock v3d"
+#-----------------------------------
+watch -n 1
+vcgencmd measure_temp
+vcgencmd measure_clock arm
+vcgencmd measure_clock v3d
+
+#TO UPDATE PROGRAMS
+sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y 
+
+#TO UPDATE DISTRO
+sudo apt update
+sudo apt dist-upgrade 
+
+#TO OVERCLOCK RASPBERRY PI 4
+#OPEN BOOT CONFIG FILE
+sudo nano /boot/config.txt
+#uncomment to overclock the arm. 700 MHz is the default.
+over_voltage=6
+arm_freq=2000
+gpu_freq=750
+
+#TO INSTALL software-properties-common PACKAGE FOR UBUNTU 14.04 OR LATER
+sudo apt install software-properties-common
+
+#INSTALL SSH-SERVER
+sudo apt-get install openssh-server
+sudo arp-scan --localnet
+
+#LIST OF IP CONFIGURATION 
+ifconfig
+
+#ARP WILL PRINT ALL IP ADDRESSES ON NETWORK 
+arp
+#ARP CAN SCAN THE NETWORK TO UPDATE THIS LIST? IT GATEHRS MORE INFO ABOUT WHAT IS ON NETWORK I GUESS
+sudo apt install arp-scan
+
+
+#TO INSTALL PLEX
+#ADD THE REPO (CHECK ONLINE TO MAKE SURE THIS IS STILL CURRENT)
+#ADD THE sudo apt install apt-transport-https FIRST TO USE HTTPS MODE BECAUSE RASBIAN CANT HANDEL HTTPS BY DEFAULT - THIS ENABLES HTTPS?
+#ADD PLEX REPO KEY (CHECK IF CURRENT EACH TIME) 
+wget https://downloads.plex.tv/plex-keys/PlexSign.key
+#ADD STEAM KEY TO SYSTEM
+sudo apt-key add PlexSign.key
+#ADD PLEX-THIRD-PARTY-REPO 
+echo 'deb https://downloads.plex.tv/repo/deb public main' | sudo tee /etc/apt/sources.list.d/plexmediaserver.list
+#THEN
+sudo apt update 
+sudo apt install plexmediaserver
+
+#TO MOUNT DRIVES IN LINUX
+#FIND UUID/DRIVE TYPE/FILESYSTEM
+lsblk -f
+#MAKE A DIRECTORY TO MOUNT IN IF YOU DONT HAVE ONE ALREADY 
+sudo mkdir -p /srv/usb-media/
+#OPEN FSTAB FILE 
+sudo nano /etc/fstab
+#EDIT TO ADD DRIVE UUID / FILESYSTEM AND OTHER PARAMATERS TO MATCH (CHECK VALUES)
+#0 0 ENDING STANDS FOR DUMP OR PASS DUMP BEING IF THE DRIVE IS BACKED UP AND PASS BEING WHICH ORDER THE fsck PROGRAM WILL CHECK FOR ERRORS AFRTER BOOT 0 MEANS DONT BACK UP AND DONT CHECK RESPECTIVELY 
+LABEL=DRIVENAME		/DIRECTORTY/PATHNAME/TO/FOLDER		FORMAT    defaults     0  0
+LABEL+PiDrive           /srv/usb-media/                          ntfs     defaults     0  0  
+#THEN 
+#USING VALUES FROM lsblk for sda1/custom/path
+sudo mount /dev/sda1 /srv/usb-media/
+
+#Disk FileSystem 
+df
+df -h (human readable)
+df -a (all) 
+df -hT (human readable with type) 
+df -t ext4 (show only disks with specified filesystem type)
+df -x ext4 (show only disks outside specified filesystem type)
+
+
+
+#SuperUserDo Shell
+sudo sh
+#Then blkid /dev/sda1 to BlockID find UUID and Partition/Filesystem Type
+blkid /dev/sda1
+
+#SSH 
+#USE PUTTY 
+#OPEN NEW INSTANCE WILL OPEN IN TERMINAL 
+#LOGIN USING @HOSTNAME (ubuntu) THEN ENTER PASSWORD FOR HOST SYSTEM
+#TO LAUNCH GUI APPLICATIONS THROUGH SSH
+sudo apt-get install xauth
+sudo apt-get install x11-apps
+#ALSO SET PUTTY TO USE x11 in SSH SETTINGS
+
+#TO INSTALL SAMBA 
+sudo apt install samba
+#CHECK WHERE SAMBA IS INSTALLED
+whereis samba
+#OUTPUT SHOULD LOOK SIMILAR TO
+samba: /usr/sbin/samba /usr/lib/samba /etc/samba /usr/share/samba /usr/share/man/man7/samba.7.gz /usr/share/man/man8/samba.8.gz
+#SETTING UP SAMBA
+#MAKE DIRECTORY FOR SAMBA IF YOU DONT HAVE ONE TO USE ALREADY,
+# YOU CAN SUBSTITUTE SAMBASHARE FOR ANOTHER NAME
+mkdir /home/<username>/sambashare 
+#OPEN CONFIG FILE FOR SAMBA
+sudo nano /etc/samba/smb.conf
+#ADD THE DIRECTORY AT THE END OF THE CONFIG FILE LIKE BELOW AND SAVE
+[sambashare]
+    comment = Samba on Ubuntu
+    path = /home/username/sambashare
+    read only = no
+    browsable = yes
+#RESTART SAMBA 
+sudo service smbd restart
+#UPDATE FIREWALL RULES TO ALLOW SAMBA TRAFFIC
+sudo ufw allow samba
+#SETUP USER ACCOUNTS
+#NOTE: Username used must belong to a system account, else it won’t save.
+sudo smbpasswd -a username
+#TO CONNECT
+#ON WINDOWS - NOTE: Note: ip-address is the Samba server IP address and sambashare is the name of the share.
+\\ip-address\sambashare
+#ON UBUNTU
+#On Ubuntu: Open up the default file manager and click Connect to Server then enter:
+smb://ip-address/sambashare
+
+#FUTHER SETUP 
+https://help.ubuntu.com/community/Samba/SambaServerGuide
+
+#HOW TO REMOVE PPA
+sudo add-apt-repository --remove ppa:name/here 
+sudo add-apt-repository --remove ppa:jd-team/jdownloader
+
+#HOW TO SET UP SSH TUNNEL
+ssh -D 8123 -f -C -q -N sammy@example.com
+#Be sure to replace sammy@example.com with your own sudo user and server IP address or domain name.
+ssh -D 8123 -f -C -q -N ubuntu@192.168.0.109
+#Explanation of arguments
+
+#-D: Tells SSH that we want a SOCKS tunnel on the specified port number (you can choose a number between 1025-65536)
+#-f: Forks the process to the background
+#-C: Compresses the data before sending it
+#-q: Uses quiet mode
+#-N: Tells SSH that no command will be sent once the tunnel is up
+
+#Verify that the tunnel is up and running with this command:
+ps aux | grep ssh
+#OUTPUT SHOULD LOOK SIMILAR TO 
+sammy    14345   0.0  0.0  2462228    452   ??  Ss    6:43AM   0:00.00 ssh -D 8123 -f -C -q -N ubuntu@192.168.0.109
+
+
+#TO LIST INSTALLED SHELLS 
+cat /etc/shells
+#TO CHANGE SHELLS
+chsh
+#ENTER PATH TO DESIRED SHELL
+/bin/zsh
+/bin/bash
+
+
+#MAKE A BACKUP FOR A SINGLE FOLDER
+#!/bin/bash
+# Backs up a single directory
+# Created: 25/8/2020
+ 
+if [ $# != 1 ]
+then
+    echo UsageWarning: Only use a single argument after scrip name, which is the directory to backup
+    exit
+fi
+if [ ! -d ~/$1 ]
+then
+    echo 'The given directory does not seem to exist (possible typo?)'
+    exit
+fi
+date=`date +%F`
+ 
+# Do we already have a backup folder for todays date?
+if [ -d ~/$1_$date ]
+then
+    echo 'This project has already been backed up today, overwrite?'
+    read answer
+    if [ $answer != 'y' ]
+    then
+        exit
+    fi
+else
+    mkdir ~/$1_$date
+fi
+cp -R ~/$1 ~/$1_$date
+echo Backup of $1 completed

@@ -199,3 +199,51 @@ else
 fi
 cp -R ~/$1 ~/$1_$date
 echo Backup of $1 completed
+
+
+# How to import an image to Python using Pycharm
+# Image source must be in same folder as current Project for Pycharm to find it
+
+import cv2
+print ("Package Imported")
+
+img = cv2.imread("ResourcesTest/0.jpg")
+
+cv2.imshow("Output",img)
+
+cv2.waitKey(0)
+
+
+# How to import a video to Python using Pycharm
+# Video source must be in same folder as current Project for Pycharm to find it
+
+import cv2
+print ("Package Imported")
+
+cap = cv2.VideoCapture("ResourcesTest/2020-07-19 23-14-25.mkv")
+
+while True:
+    success, img = cap.read()
+    cv2.imshow("Video",img)
+    if cv2.waitKey(1) & 0xFF ==ord('q'):
+        break
+
+
+# How to pull Webcam Video Stream into Python in PyCharm
+# cv2.VideoCapture(0) where (0) is default for webcam device ID 
+
+import cv2
+print ("Package Imported")
+
+cap = cv2.VideoCapture(0)
+cap.set(3,640)
+cap.set(4,480)
+cap.set(10,100)
+
+
+while True:
+        success, img = cap.read()
+        cv2.imshow("Video",img)
+        if cv2.waitKey(1) & 0xFF ==ord('q'):
+            break
+
